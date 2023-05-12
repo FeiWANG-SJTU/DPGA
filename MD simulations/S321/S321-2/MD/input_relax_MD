@@ -1,0 +1,45 @@
+##############################
+####  PROGRAM PARAMETERS  ####
+##############################
+interaction_type=DNA2
+salt_concentration=1.0
+sim_type = MD
+backend = CPU
+backend_precision = double
+use_edge = 1
+edge_n_forces = 1
+
+
+##############################
+####    SIM PARAMETERS    ####
+##############################
+steps = 5e6
+ensemble = nvt
+max_backbone_force=10
+thermostat = bussi
+bussi_tau = 1
+T = 0.1
+dt = 0.002
+verlet_skin = 0.04
+diff_coeff = 2.5
+newtonian_steps = 103
+
+##############################
+####    INPUT / OUTPUT    ####
+##############################
+topology = S321-2.top
+conf_file = mpi_0_last_conf_MC.dat
+lastconf_file = last_conf_MD.dat
+trajectory_file = mpi_0_trajectory_MD.dat
+refresh_vel = 1
+#log_file = log_trap.dat
+no_stdout_energy = 0
+restart_step_counter = 1
+energy_file = energy_MD.dat
+print_conf_interval = 5000
+print_energy_every = 10000
+time_scale = linear
+
+
+external_forces = 1
+external_forces_file = external.conf

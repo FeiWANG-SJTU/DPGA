@@ -1,0 +1,20 @@
+required software and packages:
+python
+oxDNA
+NumPy
+MatPlotLib
+BioPython
+Scikit-Learn
+Pathos
+oxDNA-analysis-tools
+
+MD simulation:
+1. Prepare initial configurations
+2. run oxDNA simulation
+oxDNA_mpi input_relax_MC
+oxDNA_mpi input_relax_MD
+oxDNA_mpi inputMD
+3. Hydrogen bond occupancy calculation
+python bond_analysis.py -p 30 inputMD mpi_0_trajectory.dat designed hydrogen-bond-occupancy.json
+4. distance claculation
+python distance.py -f both -d distance.txt -i inputMD mpi_0_trajectory.dat 21 51 10 62 0 72 
