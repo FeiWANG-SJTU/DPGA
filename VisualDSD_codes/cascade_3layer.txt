@@ -1,0 +1,178 @@
+// create by WF Dec 10, 2021
+// section 1: simulation settings
+directive simulation {initial=0.0; final=10800; points=100; plots=[outl;outh]}
+directive simulator deterministic
+directive parameters [
+kf=0.00005; //amp
+kthf=0.002; // th
+kl=0.00000001; //0-nt toehold leak
+kl1 = 0.0000001; //1-nt toehold leak
+kramp=10; //release from amp  refer to seesaw gate
+krth=0.5; // release from th
+kgate=0.00005; 
+]
+
+// section 2: initial condition
+
+// wiring instruction
+init wire12_s12 50 | // th low
+init wire12_s34 50 | //th high
+init wire12_s56 200 | // amp low
+init wire12_s78 200 | // amp high
+init wire12_s9 1000 | // fuel
+init wire12_s10 1000 |
+
+init wire23_s12 50 | // th low
+init wire23_s34 50 | //th high
+init wire23_s56 200 | // amp low
+init wire23_s78 200 | // amp high
+init wire23_s9 1000 | // fuel
+init wire23_s10 1000 |
+
+init wire34_s12 50 | // th low
+init wire34_s34 50 | //th high
+init wire34_s56 200 | // amp low
+init wire34_s78 200 | // amp high
+init wire34_s9 1000 | // fuel
+init wire34_s10 1000 |
+
+
+
+//gate
+init gate1s12 100 |
+init gate1s34 100 |
+init gate2s12 100 |
+init gate2s345 100 |
+init gate3s12 100 |
+init gate3s345 100 |
+
+
+
+
+//input
+init gate1_in11 200 |
+init gate2_in11 200 |
+init gate3_in11 200 |
+
+
+
+init unspec_in 3*200 |
+init unspec_out 3*100 |
+init unspec_fuel 3*2000 |
+init unspec_gate 3*200 |
+init unspec_th 3*100 |
+init repl 500 |
+init reph 500 |
+
+
+// section 3 : reaction
+
+// gate1
+gate1_in10 + gate1s12 -> {kgate} gate1_outh |
+gate1_in11 + gate1s34 -> {kgate} gate1_outl |
+
+unspec_fuel + gate1s12 <-> {kf,kramp} unspec_fuel_gate1s12 | //unspecific binding of fuel to gate
+unspec_fuel + gate1s34 <-> {kf, kramp} unspec_fuel_gate1s34 |
+gate1_outh + unspec_th <-> {kthf,krth} unspec_th_gate1_outh |
+gate1_outl + unspec_th <-> {kthf,krth} unspec_th_gate1_outl |
+
+// wiring instruction
+
+gate1_outl + wire12_s12 -> {kthf} waste | //desired reactions
+gate1_outh + wire12_s34 -> {kthf} waste |
+
+gate1_outl + wire12_s56 <-> {kf,kf} gate1_outl_s5 +gate2_in20 |
+gate1_outh + wire12_s78 <-> {kf,kf} gate1_outh_s7 +gate2_in21 |
+gate1_outl + wire12_s59 <-> {kf,kf} gate1_outl_s5 +wire12_s9 |
+gate1_outh + wire12_s710 <-> {kf,kf} gate1_outh_s7 +wire12_s10 |
+
+wire12_s9 + wire12_s56 <-> {kl,kl} wire12_s59 + gate2_in20|
+wire12_s10 + wire12_s78 <-> {kl,kl} wire12_s710 +gate2_in21 | //leak
+
+unspec_out + wire12_s12 <-> {kthf,krth} unspec_out_wire12_s12 | //unspecific binding of out to th
+unspec_out + wire12_s34 <-> {kthf,krth} unspec_out_wire12_s34 |
+unspec_out + wire12_s56 <-> {kf,krth} unspec_out_wire12_s56 | //unspecific binding
+unspec_out + wire12_s78 <-> {kf,krth} unspec_out_wire12_s78 |
+
+unspec_in + wire12_s12 <-> {kf,kramp} unspec_in_wire12_s12 | //unspecific binding of in to th
+unspec_in + wire12_s34 <-> {kf,kramp} unspec_in_wire12_s34 |
+unspec_in + wire12_s56 <-> {kf,kramp} unspec_in_wire12_s56 | //unspecific binding
+unspec_in + wire12_s78 <-> {kf,kramp} unspec_in_wire12_s78 |
+
+// gate2
+gate2_in10 + gate2s12 -> {kgate} gate2_outl |
+gate2_in20 + gate2s12 -> {kgate} gate2_outl |
+gate2_in21 + gate2s345 -> {kgate} gate2s34_in2 |
+gate2s34_in2 + gate2_in11 -> {kgate} gate2_outh |
+
+unspec_fuel + gate2s12 <-> {kf,kramp} unspec_fuel_gate2s12 | //unspecific binding of fuel to gate
+unspec_fuel + gate2s345 <-> {kf, kramp} unspec_fuel_gate2s345 |
+gate2s345 + gate2_in11 -> {kl1} gate2_outh |
+gate2_outh + unspec_th <-> {kthf,krth} unspec_th_gate2_outh |
+gate2_outl + unspec_th <-> {kthf,krth} unspec_th_gate2_outl |
+
+// wiring instruction
+
+gate2_outl + wire23_s12 -> {kthf} waste | //desired reactions
+gate2_outh + wire23_s34 -> {kthf} waste |
+
+gate2_outl + wire23_s56 <-> {kf,kf} gate2_outl_s5 +gate3_in20 |
+gate2_outh + wire23_s78 <-> {kf,kf} gate2_outh_s7 +gate3_in21 |
+gate2_outl + wire23_s59 <-> {kf,kf} gate2_outl_s5 +wire23_s9 |
+gate2_outh + wire23_s710 <-> {kf,kf} gate2_outh_s7 +wire23_s10 |
+
+wire23_s9 + wire23_s56 <-> {kl,kl} wire23_s59 + gate3_in20|
+wire23_s10 + wire23_s78 <-> {kl,kl} wire23_s710 +gate3_in21 | //leak
+
+unspec_out + wire23_s12 <-> {kthf,krth} unspec_out_wire23_s12 | //unspecific binding of out to th
+unspec_out + wire23_s34 <-> {kthf,krth} unspec_out_wire23_s34 |
+unspec_out + wire23_s56 <-> {kf,krth} unspec_out_wire23_s56 | //unspecific binding
+unspec_out + wire23_s78 <-> {kf,krth} unspec_out_wire23_s78 |
+
+unspec_in + wire23_s12 <-> {kf,kramp} unspec_in_wire23_s12 | //unspecific binding of in to th
+unspec_in + wire23_s34 <-> {kf,kramp} unspec_in_wire23_s34 |
+unspec_in + wire23_s56 <-> {kf,kramp} unspec_in_wire23_s56 | //unspecific binding
+unspec_in + wire23_s78 <-> {kf,kramp} unspec_in_wire23_s78 |
+
+// gate3
+gate3_in10 + gate3s12 -> {kgate} gate3_outl |
+gate3_in20 + gate3s12 -> {kgate} gate3_outl |
+gate3_in21 + gate3s345 -> {kgate} gate3s34_in2 |
+gate3s34_in2 + gate3_in11 -> {kgate} gate3_outh |
+
+unspec_fuel + gate3s12 <-> {kf,kramp} unspec_fuel_gate3s12 | //unspecific binding of fuel to gate
+unspec_fuel + gate3s345 <-> {kf, kramp} unspec_fuel_gate3s345 |
+gate3s345 + gate3_in11 -> {kl1} gate3_outh |
+gate3_outh + unspec_th <-> {kthf,krth} unspec_th_gate3_outh |
+gate3_outl + unspec_th <-> {kthf,krth} unspec_th_gate3_outl |
+
+// wiring instruction
+
+gate3_outl + wire34_s12 -> {kthf} waste | //desired reactions
+gate3_outh + wire34_s34 -> {kthf} waste |
+
+gate3_outl + wire34_s56 <-> {kf,kf} gate3_outl_s5 +gate4_in20 |
+gate3_outh + wire34_s78 <-> {kf,kf} gate3_outh_s7 +gate4_in21 |
+gate3_outl + wire34_s59 <-> {kf,kf} gate3_outl_s5 +wire34_s9 |
+gate3_outh + wire34_s710 <-> {kf,kf} gate3_outh_s7 +wire34_s10 |
+
+wire34_s9 + wire34_s56 <-> {kl,kl} wire34_s59 + gate4_in20|
+wire34_s10 + wire34_s78 <-> {kl,kl} wire34_s710 +gate4_in21 | //leak
+
+unspec_out + wire34_s12 <-> {kthf,krth} unspec_out_wire34_s12 | //unspecific binding of out to th
+unspec_out + wire34_s34 <-> {kthf,krth} unspec_out_wire34_s34 |
+unspec_out + wire34_s56 <-> {kf,krth} unspec_out_wire34_s56 | //unspecific binding
+unspec_out + wire34_s78 <-> {kf,krth} unspec_out_wire34_s78 |
+
+unspec_in + wire34_s12 <-> {kf,kramp} unspec_in_wire34_s12 | //unspecific binding of in to th
+unspec_in + wire34_s34 <-> {kf,kramp} unspec_in_wire34_s34 |
+unspec_in + wire34_s56 <-> {kf,kramp} unspec_in_wire34_s56 | //unspecific binding
+unspec_in + wire34_s78 <-> {kf,kramp} unspec_in_wire34_s78 |
+
+
+
+//reporter
+gate4_in20 +repl -> {kf} outl |
+gate4_in21 + reph -> {kf} outh
+
+

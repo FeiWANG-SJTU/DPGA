@@ -1,0 +1,80 @@
+// create by WF Dec 13, 2021
+// to simulate the influence of unspecific binding
+// section 1: simulation settings
+directive simulation {initial=0.0; final=7200; points=100; plots=[outl;outh]}
+directive simulator deterministic
+directive parameters [
+kf=0.00005; //amp
+kthf=0.002; // th
+kl=0.00000001; //0-nt toehold leak
+kl1 = 0.0000001; //1-nt toehold leak
+kramp=10; //release from amp  refer to seesaw gate
+krth=0.5; // release from th
+kgate=0.00005; 
+]
+
+// section 2: initial condition
+
+// wiring instruction
+init wir3_s12 50 | // th low
+init wir3_s34 50 | //th high
+init wir3_s56 200 | // amp low
+init wir3_s78 200 | // amp high
+init wir3_s9 1000 | // fuel
+init wir3_s10 1000 |
+
+
+//gate
+init ands12 100 |
+init ands345 100 |
+
+
+//input
+init and_in11 200 |
+init and_in20 200 |
+init and_in10 20 |
+init and_in21 20 |
+
+
+init unspec_out 15*100 |
+init unspec_th 15*100 |
+init repl 500 |
+init reph 500 |
+
+
+// section 3 : reaction
+
+// and
+and_in10 + ands12 -> {kgate} and_outl |
+and_in20 + ands12 -> {kgate} and_outl |
+and_in21 + ands345 -> {kgate} ands34_in2 |
+ands34_in2 + and_in11 -> {kgate} and_outh |
+
+ands345 + and_in11 -> {kl1} and_outh |
+and_outh + unspec_th <-> {kthf,krth} unspec_th_and_outh |
+and_outl + unspec_th <-> {kthf,krth} unspec_th_and_outl |
+
+// wiring instruction
+
+and_outl + wir3_s12 -> {kthf} waste | //desired reactions
+and_outh + wir3_s34 -> {kthf} waste |
+
+and_outl + wir3_s56 <-> {kf,kf} and_outl_s5 +gateo_l |
+and_outh + wir3_s78 <-> {kf,kf} and_outh_s7 +gateo_h |
+and_outl + wir3_s59 <-> {kf,kf} and_outl_s5 +wir3_s9 |
+and_outh + wir3_s710 <-> {kf,kf} and_outh_s7 +wir3_s10 |
+
+wir3_s9 + wir3_s56 <-> {kl,kl} wir3_s59 + gateo_l|
+wir3_s10 + wir3_s78 <-> {kl,kl} wir3_s710 +gateo_h | //leak
+
+unspec_out + wir3_s12 <-> {kthf,krth} unspec_out_wir3_s12 | //unspecific binding of out to th
+unspec_out + wir3_s34 <-> {kthf,krth} unspec_out_wir3_s34 |
+unspec_out + wir3_s56 <-> {kf,krth} unspec_out_wir3_s56 | //unspecific binding
+unspec_out + wir3_s78 <-> {kf,krth} unspec_out_wir3_s78 |
+
+
+//reporter
+gateo_l +repl -> {kf} outl |
+gateo_h + reph -> {kf} outh
+
+
